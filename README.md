@@ -1,2 +1,2 @@
 # login_module
-template
+template of login
