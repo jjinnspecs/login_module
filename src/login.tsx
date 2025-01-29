@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {Link} from 'react-router-dom';
 
 const Login: React.FC = () => {
-  const [loginIdentifier, setLoginIdentifier] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -19,7 +19,7 @@ const Login: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ loginIdentifier, password }),
+        body: JSON.stringify({ username , password }),
       });
 
       if (!response.ok) {
@@ -46,14 +46,14 @@ const Login: React.FC = () => {
       <h2 className="text-2xl font-semibold mb-6">Login</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="loginIdentifier" className="block text-sm font-medium text-gray-700">
-            Username/Email/Phone Number
+          <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+            Username
           </label>
           <input
             type="text"
-            id="loginIdentifier"
-            value={loginIdentifier}
-            onChange={(e) => setLoginIdentifier(e.target.value)}
+            id="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             className="mt-1 p-2 w-full border rounded-md focus:ring-blue-500 focus:border-blue-500"
             placeholder="Enter your username, email, or phone number"
             required

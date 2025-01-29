@@ -60,19 +60,19 @@ app.post('/api/signup', async (req, res) => {
 
 // Handle user login requests
 app.post('/api/login', async (req, res) => {
-  const { loginIdentifier, password } = req.body;
+  const { username, password } = req.body;
 
-  if (!loginIdentifier || !password) {
-    return res.status(400).json({ error: 'Identifier and password are required' });
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Username and password are required' });
   }
 
   try {
-    const [rows] = await pool.query('SELECT * FROM users WHERE username = ? OR email = ? OR phoneNumber = ?', [loginIdentifier, loginIdentifier, loginIdentifier]);
+    const [rows] = await pool.query('SELECT * FROM users WHERE username = ?', username);
 
     let user = rows[0];
 
     if (!user) {
-      return res.status(400).json({ error: 'User does not exist' }); 
+      return res.status(400).json({ error: 'Username does not exist' }); 
     }
 
     try {
