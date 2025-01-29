@@ -25,20 +25,55 @@ const Login: React.FC = () => {
       if (!response.ok) {
         const data = await response.json();
         setErrorMessage(data.error || 'An error occurred');
+        setIsLoading(false);
         return;
       }
 
-      // Handle successful login (e.g., redirect)
-      console.log('Login successful!');
-      alert('G');
-      // window.location.href = '/dashboard'; // Redirect to dashboard
+    // Handle successful login, retrieve the token
+    const  data = await response.json();
+    const token = data.token;
+    const loggedInUsername = data.username; // Get the usernam from the response
+
+    // Store the token in sessionStorage
+    localStorage.setItem('authToken', token);
+
+    // fetch user data
+    fetchUserData(token);
+
+    console.log('Login successful!');
+    alert(`Welcome, ${loggedInUsername}!`);
+
+    setIsLoading(false);
+ 
+
+     window.location.href = '/landing_page'; // Redirect to Landing Page
     } catch (error) {
       setErrorMessage('Login failed. Please check your credentials.');
-    } finally {
       setIsLoading(false); 
     }
   };
 
+  // Fetch the user data from the backend after login
+const fetchUserData = async (token: string) => {
+  try {
+    const response = await fetch('http://localhost:3002/api/user', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch user data');
+    }
+
+    const userData = await response.json();
+    console.log('User data:', userData);
+    // You can store this data in your state or context if needed
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+  }
+};
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">

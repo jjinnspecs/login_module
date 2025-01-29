@@ -58,6 +58,9 @@ app.post('/api/signup', async (req, res) => {
   }
 });
 
+
+import jwt from 'jsonwebtoken';
+
 // Handle user login requests
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
@@ -79,8 +82,10 @@ app.post('/api/login', async (req, res) => {
       const isPasswordValid = await bcrypt.compare(password, user.password);
 
       if (isPasswordValid) {
+
+        const token = jwt.sign({ userId: user.id, username: user.username }, jwtSecret, { expiresIn: '1h'});
         // Login successful (generate token, handle session, etc.)
-        res.json({ message: 'Login successful' }); 
+        res.json({ message: 'Login successful', token, username: user.username }); 
       } else {
         return res.status(400).json({ error: 'Wrong password' }); 
       }
@@ -99,6 +104,44 @@ app.post('/api/login', async (req, res) => {
     return res.status(500).json({ error: 'Internal server error' }); 
   }
 }); 
+
+// Middleware to verify the JWT token
+const verifyToken = (req, res, next) => {
+  const token = req.headers['authorization']?.split(' ')[1]; // Get the token from the Authorization header
+
+  if (!token) {
+    return res.status(403).json({ error: 'No token provided' });
+  }
+
+  jwt.verify(token, jwtSecret, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+    req.userId = decoded.userId; // Attach the userId from the token to the request object
+    next();
+  });
+};
+
+// Handle the request to fetch the user data
+app.get('/api/user', verifyToken, async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT * FROM users WHERE id = ?', [req.userId]);
+    const user = rows[0];
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Send back the user data (omit the password field for security)
+    const { password, ...userData } = user;
+    res.json(userData);
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 
 // Handle 404 Not Found requests
 app.use((req, res) => {
